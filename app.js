@@ -1246,7 +1246,23 @@ els.dealForm.addEventListener("submit", (e) => {
 });
 
 // 16. Gemini API Settings & Live Background Search
-const geminiApiKey = "AIzaSyAvvlEZ6wh6MrFHI5KSk-Ub6Dfx9nlW8D0";
+// Try to grab key from URL query parameters (e.g. ?key=AIzaSy...)
+const urlParams = new URLSearchParams(window.location.search);
+const urlKey = urlParams.get('key');
+if (urlKey) {
+    if (urlKey.trim().toLowerCase() === "clear") {
+        localStorage.removeItem("dealmate_gemini_api_key");
+        alert("Saved Gemini API Key has been cleared!");
+    } else {
+        localStorage.setItem("dealmate_gemini_api_key", urlKey.trim());
+        alert("New Gemini API Key saved successfully!");
+    }
+    // Remove key from URL address bar for safety and clean UX
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// Retrieve from localStorage or fallback to static key
+let geminiApiKey = localStorage.getItem("dealmate_gemini_api_key") || "AIzaSyAvvlEZ6wh6MrFHI5KSk-Ub6Dfx9nlW8D0";
 
 els.btnFetchAi.addEventListener("click", async () => {
     const productName = els.productName.value.trim();
@@ -1361,7 +1377,12 @@ Ensure all keys are matched exactly and values are integers. Do not add any conv
         
     } catch (err) {
         console.error("AI Fetch Error:", err);
-        alert("Failed to search live price details from Gemini API. Please check your API key or connection and try again.");
+        alert("Failed to search live price details from Gemini API.\n\n" +
+              "Note: If the API key was pushed to a public GitHub repository, Google may have automatically blocked it (API_KEY_SERVICE_BLOCKED).\n\n" +
+              "To use your own key:\n" +
+              "1. Get a free key from Google AI Studio (aistudio.google.com)\n" +
+              "2. Open this site with '?key=YOUR_NEW_KEY' in the URL (e.g., https://godasisai.github.io/deal-mate-ai/?key=AIzaSy...)\n\n" +
+              "The app will automatically save it so you never have to enter it again!");
     } finally {
         els.loadingOverlay.style.display = "none";
     }
