@@ -30,9 +30,6 @@
             </div>
             
             <div class="header-controls">
-                <button id="btn-api-settings" class="btn-secondary" title="Gemini API Settings">
-                    <i class="fa-solid fa-key"></i> <span>AI Settings</span>
-                </button>
                 <button id="btn-history" class="btn-secondary" title="View Saved Deals">
                     <i class="fa-solid fa-history"></i> <span>Saved Deals</span>
                 </button>
@@ -468,28 +465,7 @@
         </main>
     </div>
 
-    <!-- API Settings Modal (Hidden by Default) -->
-    <div id="api-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Gemini AI Integration Settings</h2>
-                <button class="close-modal-btn" id="close-api-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p class="section-desc">To search and fetch live, accurate pricing benchmarks and issues in the background, DealMate AI can connect directly to Google's Gemini API.</p>
-                <div class="form-group">
-                    <label for="api-key-input">Gemini API Key</label>
-                    <input type="password" id="api-key-input" placeholder="AIzaSy...">
-                    <small class="text-muted" style="display: block; margin-top: 6px; line-height: 1.4;">
-                        Don't have a key? You can get a free developer key from the official <a href="https://aistudio.google.com/" target="_blank">Google AI Studio <i class="fa-solid fa-up-right-from-square"></i></a>.
-                    </small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="btn-save-api-key" class="btn-primary">Save Key</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- History Sidebar Modal (Hidden by Default) -->
     <div id="history-modal" class="modal">

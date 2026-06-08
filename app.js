@@ -272,11 +272,6 @@ const els = {
     checklistItemsBox: doc.getElementById("checklist-items-box"),
 
     // API settings & loader
-    btnApiSettings: doc.getElementById("btn-api-settings"),
-    closeApiModal: doc.getElementById("close-api-modal"),
-    apiModal: doc.getElementById("api-modal"),
-    btnSaveApiKey: doc.getElementById("btn-save-api-key"),
-    apiKeyInput: doc.getElementById("api-key-input"),
     btnFetchAi: doc.getElementById("btn-fetch-ai"),
     loadingOverlay: doc.getElementById("loading-overlay")
 };
@@ -1251,29 +1246,7 @@ els.dealForm.addEventListener("submit", (e) => {
 });
 
 // 16. Gemini API Settings & Live Background Search
-let geminiApiKey = localStorage.getItem("dealmate_gemini_api_key") || "AIzaSyAvvlEZ6wh6MrFHI5KSk-Ub6Dfx9nlW8D0";
-
-const toggleApiModal = (show) => {
-    if (show) {
-        els.apiKeyInput.value = geminiApiKey;
-        els.apiModal.classList.add("open");
-    } else {
-        els.apiModal.classList.remove("open");
-    }
-};
-
-els.btnApiSettings.addEventListener("click", () => toggleApiModal(true));
-els.closeApiModal.addEventListener("click", () => toggleApiModal(false));
-els.apiModal.addEventListener("click", (e) => {
-    if (e.target === els.apiModal) toggleApiModal(false);
-});
-
-els.btnSaveApiKey.addEventListener("click", () => {
-    geminiApiKey = els.apiKeyInput.value.trim();
-    localStorage.setItem("dealmate_gemini_api_key", geminiApiKey);
-    toggleApiModal(false);
-    alert("API Key saved successfully!");
-});
+const geminiApiKey = "AIzaSyAvvlEZ6wh6MrFHI5KSk-Ub6Dfx9nlW8D0";
 
 els.btnFetchAi.addEventListener("click", async () => {
     const productName = els.productName.value.trim();
@@ -1282,12 +1255,6 @@ els.btnFetchAi.addEventListener("click", async () => {
     if (!productName) {
         alert("Please enter a Product Name first to search!");
         els.productName.focus();
-        return;
-    }
-    
-    if (!geminiApiKey) {
-        alert("Gemini API Key is required to fetch details in the background. Please save your API key in AI Settings first.");
-        toggleApiModal(true);
         return;
     }
     
