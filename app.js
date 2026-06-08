@@ -1324,10 +1324,7 @@ Ensure all keys are matched exactly and values are integers. Do not add any conv
                     {
                         googleSearch: {}
                     }
-                ],
-                generationConfig: {
-                    responseMimeType: "application/json"
-                }
+                ]
             })
         });
         
@@ -1337,7 +1334,16 @@ Ensure all keys are matched exactly and values are integers. Do not add any conv
         
         const resultJson = await response.json();
         const textResponse = resultJson.candidates[0].content.parts[0].text;
-        const data = JSON.parse(textResponse);
+        
+        // Clean markdown code block formatting if present
+        let cleanedText = textResponse.trim();
+        if (cleanedText.startsWith("```")) {
+            cleanedText = cleanedText.replace(/^```[a-zA-Z0-9]*\n?/, "");
+            cleanedText = cleanedText.replace(/\n?```$/, "");
+        }
+        cleanedText = cleanedText.trim();
+        
+        const data = JSON.parse(cleanedText);
         
         // Cache this search dataset globally for runDealAnalysis()
         lastFetchedAIData = data;
