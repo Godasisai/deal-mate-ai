@@ -176,31 +176,10 @@
                             </div>
                         </div>
 
-                        <!-- Predefined Category Issues -->
-                        <div class="form-group" id="predefined-issues-container">
-                            <label id="issues-label">Common Category Issues (Select to subtract value)</label>
-                            <div class="issues-checkbox-list" id="category-issues-list">
-                                <!-- Populated dynamically by JS -->
-                                <p class="text-muted">Select a category above to view common issues.</p>
-                            </div>
-                        </div>
-
-                        <!-- Custom Damage / Issues -->
+                        <!-- Damage or Issues Input -->
                         <div class="form-group">
-                            <label>Custom Issues / Repairs Needed</label>
-                            <div class="custom-issue-adder">
-                                <input type="text" id="custom-issue-name" placeholder="e.g. Scratched back, loose hinge">
-                                <div class="price-input-wrapper shrink-input">
-                                    <span class="currency-symbol">₹</span>
-                                    <input type="number" id="custom-issue-cost" placeholder="Deduct value">
-                                </div>
-                                <button type="button" id="btn-add-custom-issue" class="btn-icon" title="Add Issue">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
-                            <div class="custom-issues-chips" id="custom-issues-chips-list">
-                                <!-- Chip elements appear here -->
-                            </div>
+                            <label for="damage-issues">Damage or Issues / Repairs Needed</label>
+                            <textarea id="damage-issues" placeholder="e.g. Battery drains fast, scratches on back, charger replaced" rows="3"></textarea>
                         </div>
 
                         <div class="form-row">

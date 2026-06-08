@@ -220,11 +220,7 @@ const els = {
     newPrice: doc.getElementById("new-price"),
     usedAgeVal: doc.getElementById("used-age-val"),
     usedAgeUnit: doc.getElementById("used-age-unit"),
-    customIssueName: doc.getElementById("custom-issue-name"),
-    customIssueCost: doc.getElementById("custom-issue-cost"),
-    btnAddCustomIssue: doc.getElementById("btn-add-custom-issue"),
-    customIssuesChipsList: doc.getElementById("custom-issues-chips-list"),
-    categoryIssuesList: doc.getElementById("category-issues-list"),
+    damageIssues: doc.getElementById("damage-issues"),
     location: doc.getElementById("location"),
     urgency: doc.getElementById("urgency"),
     btnAnalyze: doc.getElementById("btn-analyze"),
@@ -382,18 +378,7 @@ els.catalogDropdown.addEventListener("click", (e) => {
     els.productName.focus();
 });
 
-// 8. Predefined and Custom Issues Setup
-const updatePredefinedIssues = (category, preSelectedKeys = []) => {
-    const issues = categoryIssues[category] || categoryIssues.Other;
-    els.categoryIssuesList.innerHTML = Object.entries(issues).map(([key, info]) => `
-        <label class="issue-item">
-            <input type="checkbox" name="predef-issue" value="${key}" ${preSelectedKeys.includes(key) ? "checked" : ""}>
-            <span>${info.desc}</span>
-            <span class="issue-cost-badge">-₹${info.cost.toLocaleString('en-IN')}</span>
-        </label>
-    `).join("");
-};
-
+// 8. Dynamic Accessories Labels Setup
 const updateAccessoriesLabels = (category) => {
     const lblCharger = doc.getElementById("lbl-acc-charger");
     const lblBox = doc.getElementById("lbl-acc-box");
@@ -427,40 +412,8 @@ const updateAccessoriesLabels = (category) => {
 
 els.productCategory.addEventListener("change", (e) => {
     const cat = e.target.value;
-    updatePredefinedIssues(cat);
     updateAccessoriesLabels(cat);
 });
-
-// Custom issues management
-els.btnAddCustomIssue.addEventListener("click", () => {
-    const name = els.customIssueName.value.trim();
-    const cost = parseInt(els.customIssueCost.value);
-    
-    if (!name || isNaN(cost) || cost <= 0) return;
-    
-    customIssues.push({ name, cost });
-    renderCustomChips();
-    
-    els.customIssueName.value = "";
-    els.customIssueCost.value = "";
-});
-
-const renderCustomChips = () => {
-    els.customIssuesChipsList.innerHTML = customIssues.map((issue, idx) => `
-        <span class="custom-chip">
-            <span>${issue.name}</span>
-            <span class="chip-cost">-₹${issue.cost.toLocaleString('en-IN')}</span>
-            <button type="button" class="remove-chip-btn" onclick="removeCustomIssue(${idx})">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </span>
-    `).join("");
-};
-
-window.removeCustomIssue = (index) => {
-    customIssues.splice(index, 1);
-    renderCustomChips();
-};
 
 // 9. Pricing Engine and Calculations Logic
 const calculateDepreciationFactor = (ageYears, category) => {
@@ -535,26 +488,48 @@ const runDealAnalysis = () => {
     const conditionDepreciationCost = Math.round(currentVal * (1 - condMultiplier));
     currentVal = Math.round(currentVal * condMultiplier);
     
-    // Step 3: Predefined issue deductions
+    // Step 3: Issue Deductions (parsed from text area or retrieved by AI Fetch)
     let issueDeductionsCost = 0;
-    const selectedPredefCheckboxes = doc.querySelectorAll('input[name="predef-issue"]:checked');
-    const issuesData = categoryIssues[category] || categoryIssues.Other;
     const issuesApplied = [];
     
-    selectedPredefCheckboxes.forEach(cb => {
-        const key = cb.value;
-        const issue = issuesData[key];
-        if (issue) {
-            issueDeductionsCost += issue.cost;
-            issuesApplied.push({ name: issue.desc, cost: issue.cost });
-        }
-    });
+    const damageText = els.damageIssues.value.trim().toLowerCase();
     
-    // Step 4: Custom issue deductions
-    customIssues.forEach(issue => {
-        issueDeductionsCost += issue.cost;
-        issuesApplied.push({ name: issue.name, cost: issue.cost });
-    });
+    if (lastFetchedAIData && lastFetchedAIData.productName.toLowerCase() === name.toLowerCase() && lastFetchedAIData.commonIssues) {
+        // If we ran an AI Fetch, use the exact cost deductions returned by Gemini
+        lastFetchedAIData.commonIssues.forEach(issue => {
+            issueDeductionsCost += issue.cost;
+            issuesApplied.push({ name: issue.name, cost: issue.cost });
+        });
+    } else if (damageText) {
+        // Fallback local keyword parsing
+        const keywordDeductions = [
+            { keywords: ["battery", "backup", "drain"], desc: "Battery Issue", cost: category === "Laptop" ? 4000 : (category === "Mobile" ? 3000 : 1500) },
+            { keywords: ["scratch", "dent", "scuff"], desc: "Body Scratches / Dents", cost: category === "Car" ? 8000 : (category === "Bike" ? 2000 : 1500) },
+            { keywords: ["screen", "crack", "display", "glass"], desc: "Screen / Glass Damage", cost: category === "TV" ? 12000 : (category === "Mobile" ? 6000 : (category === "Laptop" ? 8000 : 2500)) },
+            { keywords: ["charger", "power cord", "adapter"], desc: "Charger Issue", cost: 1000 },
+            { keywords: ["engine", "rattle", "sound"], desc: "Engine Issue", cost: category === "Car" ? 10000 : 5000 },
+            { keywords: ["gearbox", "clutch", "transmission"], desc: "Gearbox / Clutch Issue", cost: category === "Car" ? 15000 : 4000 },
+            { keywords: ["tyre", "tire", "wheel"], desc: "Tyre Wear", cost: category === "Car" ? 12000 : (category === "Bike" ? 4000 : 1500) },
+            { keywords: ["suspension", "strut", "absorber"], desc: "Suspension Issue", cost: 8000 },
+            { keywords: ["rust", "corrosion"], desc: "Body Rust", cost: 3000 },
+            { keywords: ["loose", "wobble"], desc: "Structural Hinge / Joints Wobbling", cost: 1500 },
+            { keywords: ["spoil", "bruise", "rotten", "mushy", "overripe"], desc: "Bruised / Spoiled Parts", cost: category === "FruitsVegetables" ? 50 : 20 }
+        ];
+        
+        keywordDeductions.forEach(rule => {
+            if (rule.keywords.some(kw => damageText.includes(kw))) {
+                issueDeductionsCost += rule.cost;
+                issuesApplied.push({ name: rule.desc, cost: rule.cost });
+            }
+        });
+        
+        // If no keywords matched but they typed something, apply a generic wear deduction
+        if (issuesApplied.length === 0) {
+            const genericCost = category === "Car" ? 5000 : (category === "Laptop" || category === "Mobile" || category === "Bike" ? 1500 : 500);
+            issueDeductionsCost += genericCost;
+            issuesApplied.push({ name: "Wear & Tear Issues", cost: genericCost });
+        }
+    }
     
     // Step 5: Accessories Penalties
     let accessoriesDeductionsCost = 0;
@@ -1322,9 +1297,13 @@ els.btnFetchAi.addEventListener("click", async () => {
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
         
+        const damageIssuesText = els.damageIssues.value.trim();
+        
         // Query to perform live web search for lowest price all over India
         const prompt = `Perform a live web search to check and find the lowest price for the product: "${productName}" all over India (or in region: "${location}"). 
 Search across multiple online and offline platforms (e.g. Amazon.in, Flipkart, OLX India, Facebook Marketplace India, local mandis for fresh items, CarDekho/Spinny for cars, etc.).
+
+Analyze these specific issues/damages if they are provided: "${damageIssuesText}" (If this is empty, search and assume standard common issues for the product). Estimate realistic repair/deduction costs for each issue in Indian Rupees (INR).
 
 Respond ONLY with a valid raw JSON object matching this schema (ensure all prices are in INR/₹ unless location is non-Indian, and write integers. Do not wrap in markdown code blocks):
 {
@@ -1340,7 +1319,7 @@ Respond ONLY with a valid raw JSON object matching this schema (ensure all price
   ],
   "launchYearOrAgeDays": integer (the release year for electronics/vehicles, OR shelf age in days for fruits/vegetables),
   "commonIssues": [
-    {"name": "string (issue description, e.g., transmission lag, overripe, screen burn-in)", "cost": integer (deduction/repair cost)}
+    {"name": "string (issue description matching or explaining the typed issue, e.g., transmission lag, overripe, screen burn-in)", "cost": integer (deduction/repair cost)}
   ]
 }
 Ensure all keys are matched exactly and values are integers. Do not add any conversational text, notes, or comments. Just the raw JSON.`;
@@ -1384,8 +1363,7 @@ Ensure all keys are matched exactly and values are integers. Do not add any conv
         if (data.productName) els.productName.value = data.productName;
         if (data.category) {
             els.productCategory.value = data.category;
-            // Update labels and issue checklists dynamically
-            updatePredefinedIssues(data.category);
+            // Update labels dynamically
             updateAccessoriesLabels(data.category);
         }
         if (data.launchPrice) els.launchPrice.value = data.launchPrice;
@@ -1406,16 +1384,9 @@ Ensure all keys are matched exactly and values are integers. Do not add any conv
             }
         }
         
-        // Clear old issues
-        customIssues = [];
-        
-        // Populate custom issues list from live search results
-        if (data.commonIssues && Array.isArray(data.commonIssues)) {
-            customIssues = data.commonIssues.map(issue => ({
-                name: issue.name,
-                cost: issue.cost || 1000
-            }));
-            renderCustomChips();
+        // Auto fill damage issues text area if empty
+        if (!els.damageIssues.value.trim() && data.commonIssues && Array.isArray(data.commonIssues)) {
+            els.damageIssues.value = data.commonIssues.map(issue => issue.name).join(", ");
         }
         
         // Trigger calculation automatically
@@ -1431,4 +1402,4 @@ Ensure all keys are matched exactly and values are integers. Do not add any conv
 
 // Initialize app
 initTheme();
-updatePredefinedIssues("Laptop"); // default state
+updateAccessoriesLabels("Laptop"); // default state
