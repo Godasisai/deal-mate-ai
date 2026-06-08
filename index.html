@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealMate AI – Used Product Price & Negotiation Assistant</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-handshake-simple"></i>
+                </div>
+                <div>
+                    <h1>DealMate <span class="accent-text">AI</span></h1>
+                    <p class="tagline">Used Product Price & Negotiation Assistant</p>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <button id="btn-api-settings" class="btn-secondary" title="Gemini API Settings">
+                    <i class="fa-solid fa-key"></i> <span>AI Settings</span>
+                </button>
+                <button id="btn-history" class="btn-secondary" title="View Saved Deals">
+                    <i class="fa-solid fa-history"></i> <span>Saved Deals</span>
+                </button>
+                <button id="theme-toggle" class="btn-theme" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <main class="main-grid">
+            
+            <!-- Left Panel: Input & Searches -->
+            <section class="left-panel">
+                
+                <!-- Catalog Search Bar -->
+                <div class="card catalog-search-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-magnifying-glass-dollar header-icon text-accent"></i>
+                        <h3>Intelligent Product Catalog</h3>
+                    </div>
+                    <p class="section-desc">Search common products to instantly auto-fill benchmark prices, age, and typical issues.</p>
+                    <div class="autocomplete-container">
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-search input-icon"></i>
+                            <input type="text" id="catalog-search" placeholder="Type to search (e.g. MacBook Air, HP Victus, iPhone)..." autocomplete="off">
+                            <button id="clear-search" class="clear-btn" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <ul id="catalog-dropdown" class="catalog-dropdown" style="display:none;"></ul>
+                    </div>
+                </div>
+
+                <!-- Deal Input Panel -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-sliders header-icon text-accent"></i>
+                        <h3>Product Analysis Form</h3>
+                    </div>
+                    <form id="deal-form" class="deal-form" onsubmit="return false;">
+                        
+                        <div class="form-row">
+                            <div class="form-group col-8">
+                                <label for="product-name">Product Name <span class="required">*</span></label>
+                                <div class="input-action-wrapper">
+                                    <input type="text" id="product-name" placeholder="e.g. HP Victus 15" required>
+                                    <button type="button" id="btn-fetch-ai" class="btn-action-spark" title="Fetch live market data using Gemini AI">
+                                        <i class="fa-solid fa-bolt"></i> AI Fetch
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="product-category">Category <span class="required">*</span></label>
+                                <select id="product-category" required>
+                                    <option value="" disabled selected>Select</option>
+                                    <option value="Laptop">Laptop</option>
+                                    <option value="Mobile">Mobile</option>
+                                    <option value="Bike">Bike</option>
+                                    <option value="Car">Car</option>
+                                    <option value="TV">TV</option>
+                                    <option value="HomeAppliance">Home Appliance</option>
+                                    <option value="FruitsVegetables">Fruits / Vegetables</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-4">
+                                <label for="seller-price">Seller Asking Price <span class="required">*</span></label>
+                                <div class="price-input-wrapper">
+                                    <span class="currency-symbol">₹</span>
+                                    <input type="number" id="seller-price" placeholder="e.g. 45,000" min="1" required>
+                                </div>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="launch-price">Launch Price</label>
+                                <div class="price-input-wrapper">
+                                    <span class="currency-symbol">₹</span>
+                                    <input type="number" id="launch-price" placeholder="e.g. 65,000" min="1">
+                                </div>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="new-price">Current New Price <span class="required">*</span></label>
+                                <div class="price-input-wrapper">
+                                    <span class="currency-symbol">₹</span>
+                                    <input type="number" id="new-price" placeholder="e.g. 55,000" min="1" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Used For (Age) <span class="required">*</span></label>
+                                <div class="age-input-group">
+                                    <input type="number" id="used-age-val" placeholder="e.g. 2" min="0" step="any" required style="flex: 2;">
+                                    <select id="used-age-unit" style="flex: 1; min-width: 80px;">
+                                        <option value="years" selected>Years</option>
+                                        <option value="months">Months</option>
+                                        <option value="days">Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Condition <span class="required">*</span></label>
+                                <div class="segmented-control">
+                                    <input type="radio" name="condition" id="cond-excellent" value="Excellent">
+                                    <label for="cond-excellent">Excellent</label>
+                                    
+                                    <input type="radio" name="condition" id="cond-good" value="Good" checked>
+                                    <label for="cond-good">Good</label>
+                                    
+                                    <input type="radio" name="condition" id="cond-average" value="Average">
+                                    <label for="cond-average">Average</label>
+                                    
+                                    <input type="radio" name="condition" id="cond-poor" value="Poor">
+                                    <label for="cond-poor">Poor</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Accessories / Deliverables</label>
+                            <div class="accessories-grid">
+                                <label class="checkbox-chip">
+                                    <input type="checkbox" id="acc-charger" checked>
+                                    <span class="chip-label" id="lbl-acc-charger"><i class="fa-solid fa-plug"></i> Charger</span>
+                                </label>
+                                <label class="checkbox-chip">
+                                    <input type="checkbox" id="acc-box" checked>
+                                    <span class="chip-label" id="lbl-acc-box"><i class="fa-solid fa-box"></i> Original Box</span>
+                                </label>
+                                <label class="checkbox-chip">
+                                    <input type="checkbox" id="acc-bill" checked>
+                                    <span class="chip-label" id="lbl-acc-bill"><i class="fa-solid fa-file-invoice-dollar"></i> Bill / Invoice</span>
+                                </label>
+                                <label class="checkbox-chip">
+                                    <input type="checkbox" id="acc-warranty" checked>
+                                    <span class="chip-label" id="lbl-acc-warranty"><i class="fa-solid fa-shield-halved"></i> Active Warranty</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Predefined Category Issues -->
+                        <div class="form-group" id="predefined-issues-container">
+                            <label id="issues-label">Common Category Issues (Select to subtract value)</label>
+                            <div class="issues-checkbox-list" id="category-issues-list">
+                                <!-- Populated dynamically by JS -->
+                                <p class="text-muted">Select a category above to view common issues.</p>
+                            </div>
+                        </div>
+
+                        <!-- Custom Damage / Issues -->
+                        <div class="form-group">
+                            <label>Custom Issues / Repairs Needed</label>
+                            <div class="custom-issue-adder">
+                                <input type="text" id="custom-issue-name" placeholder="e.g. Scratched back, loose hinge">
+                                <div class="price-input-wrapper shrink-input">
+                                    <span class="currency-symbol">₹</span>
+                                    <input type="number" id="custom-issue-cost" placeholder="Deduct value">
+                                </div>
+                                <button type="button" id="btn-add-custom-issue" class="btn-icon" title="Add Issue">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="custom-issues-chips" id="custom-issues-chips-list">
+                                <!-- Chip elements appear here -->
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label for="location">Location</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-location-dot input-icon"></i>
+                                    <input type="text" id="location" placeholder="e.g. Hyderabad">
+                                </div>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="urgency">Urgency</label>
+                                <select id="urgency">
+                                    <option value="Normal" selected>Normal (Fair negotiation)</option>
+                                    <option value="Quick">Need quickly (Willing to pay a bit more)</option>
+                                    <option value="BestDeal">Only if best deal (Aggressive offer)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-analyze" class="btn-primary btn-block">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Deal
+                        </button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Right Panel: Results & Tools -->
+            <section class="right-panel">
+                
+                <!-- Welcome Placeholder -->
+                <div class="card placeholder-card" id="result-placeholder">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        </div>
+                        <h2>Awaiting Deal Analysis</h2>
+                        <p>Fill out the <strong>Product Analysis Form</strong> on the left, or use the <strong>Intelligent Product Catalog</strong> to auto-fill benchmark items, then click <strong>Analyze Deal</strong> to get a full valuation & negotiation guide.</p>
+                        <div class="demo-bullets">
+                            <div class="bullet-item">
+                                <i class="fa-solid fa-check text-success"></i>
+                                <span>Calculates accurate fair used price based on depreciation curves.</span>
+                            </div>
+                            <div class="bullet-item">
+                                <i class="fa-solid fa-check text-success"></i>
+                                <span>Estimates custom issue deductions and accessory penalization.</span>
+                            </div>
+                            <div class="bullet-item">
+                                <i class="fa-solid fa-check text-success"></i>
+                                <span>Generates custom negotiations and lets you practice response scenarios.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Dashboard (Hidden Initially) -->
+                <div class="result-dashboard" id="result-dashboard" style="display: none;">
+                    
+                    <!-- Top Summary Card: Score & Verdict -->
+                    <div class="card score-card">
+                        <div class="score-grid">
+                            <div class="gauge-container">
+                                <svg class="score-gauge" viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="gauge-fill" id="gauge-fill-circle" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="gauge-text">
+                                    <span id="score-number" class="score-number">58</span>
+                                    <span class="score-total">/100</span>
+                                </div>
+                            </div>
+                            <div class="verdict-text-area">
+                                <span class="verdict-pill" id="score-verdict-pill">RISKY DEAL</span>
+                                <h2 id="score-verdict-title">Negotiate Heavily</h2>
+                                <p id="score-verdict-desc">The seller is asking for more than the product is worth, especially considering the usage and issues. Do not pay the asking price.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Spectrum Card -->
+                    <div class="card spectrum-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-chart-line-up header-icon text-accent"></i>
+                            <h3>Market Price Spectrum</h3>
+                        </div>
+                        <div class="spectrum-visual">
+                            <div class="spectrum-bar">
+                                <div class="spectrum-segment start-offer-seg" title="Starting Offer Zone"></div>
+                                <div class="spectrum-segment fair-range-seg" title="Fair Value Zone"></div>
+                                <div class="spectrum-segment risky-seg" title="Risky/Overpriced Zone"></div>
+                                <div class="spectrum-segment overpriced-seg" title="Extremely Overpriced Zone"></div>
+                                
+                                <!-- Markers -->
+                                <div class="spectrum-marker offer-marker" id="marker-offer" style="left: 20%;">
+                                    <div class="marker-line"></div>
+                                    <div class="marker-label">Offer<br><span id="val-marker-offer">₹30k</span></div>
+                                </div>
+                                <div class="spectrum-marker max-marker" id="marker-max" style="left: 45%;">
+                                    <div class="marker-line"></div>
+                                    <div class="marker-label">Max Safe<br><span id="val-marker-max">₹35k</span></div>
+                                </div>
+                                <div class="spectrum-marker seller-marker" id="marker-seller" style="left: 65%;">
+                                    <div class="marker-pin"><i class="fa-solid fa-location-pin"></i></div>
+                                    <div class="marker-label font-bold">Asking<br><span id="val-marker-seller">₹45k</span></div>
+                                </div>
+                            </div>
+                            <div class="spectrum-labels">
+                                <span id="label-launch-price">Launch: ₹65k</span>
+                                <span id="label-new-price">Current New: ₹55k</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Price Analysis Cards -->
+                    <div class="price-details-grid">
+                        <div class="card detail-tile text-center">
+                            <span class="tile-title">Best Starting Offer</span>
+                            <h3 class="tile-value text-success" id="val-starting-offer">₹30,000</h3>
+                            <p class="tile-desc">Begin the bidding here to leave room for negotiation.</p>
+                        </div>
+                        <div class="card detail-tile text-center">
+                            <span class="tile-title">Fair Used Price</span>
+                            <h3 class="tile-value text-primary" id="val-fair-range">₹30,000 – ₹35,000</h3>
+                            <p class="tile-desc">Target closing price based on age and wear details.</p>
+                        </div>
+                        <div class="card detail-tile text-center highlight-border-danger">
+                            <span class="tile-title">Hard Stop Price <i class="fa-solid fa-circle-exclamation text-danger" title="Absolute limit - do not cross!"></i></span>
+                            <h3 class="tile-value text-danger" id="val-hard-stop">₹35,000</h3>
+                            <p class="tile-desc">If the seller refuses to go below this, walk away.</p>
+                        </div>
+                    </div>
+
+                    <!-- Issue-Based Deductions Card -->
+                    <div class="card deductions-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-file-circle-minus header-icon text-danger"></i>
+                            <h3>Price Depreciation & Deductions</h3>
+                        </div>
+                        <div class="deductions-list" id="deductions-list-items">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="deductions-footer">
+                            <span>Total Value Deducted:</span>
+                            <span class="text-danger font-bold" id="val-total-deducted">-₹20,000</span>
+                        </div>
+                    </div>
+
+                    <!-- AI Verdict Card -->
+                    <div class="card verdict-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-brain header-icon text-accent"></i>
+                            <h3>DealMate AI Verdict</h3>
+                        </div>
+                        <div class="verdict-content">
+                            <blockquote class="ai-quote" id="ai-verdict-quote">
+                                "Start negotiation from ₹30,000. If the seller agrees to close the deal between ₹30,000 and ₹35,000, it is a reasonable purchase. Do not exceed ₹35,000 because the device is used for 2 years and needs a battery replacement."
+                            </blockquote>
+                        </div>
+                    </div>
+
+                    <!-- Live Lowest Price Finder Card -->
+                    <div class="card lowest-price-card" id="lowest-price-card" style="display: none;">
+                        <div class="card-header">
+                            <i class="fa-solid fa-tags header-icon text-success"></i>
+                            <h3>Live Lowest Price Finder (India)</h3>
+                        </div>
+                        <div class="lowest-price-hero">
+                            <div class="lowest-price-badge">
+                                <span class="badge-label">Lowest Price Found</span>
+                                <h2 id="lowest-price-val">₹35,000</h2>
+                                <span class="badge-platform" id="lowest-price-platform">on OLX India</span>
+                            </div>
+                            <a href="#" target="_blank" id="lowest-price-link" class="btn-primary btn-sm" style="align-self: center;">
+                                <i class="fa-solid fa-up-right-from-square"></i> View Deal
+                            </a>
+                        </div>
+                        <div class="comparison-table-wrapper">
+                            <table class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Platform / Resource</th>
+                                        <th>Live Price</th>
+                                        <th>Link</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparison-table-body">
+                                    <!-- Populated dynamically by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Smart Search Panel -->
+                    <div class="card search-helper-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-globe header-icon text-accent"></i>
+                            <h3>Smart Multi-Resource Search</h3>
+                        </div>
+                        <p class="section-desc">Search similar listings across multiple sources to cross-check market values:</p>
+                        
+                        <div class="search-resources-grid" id="search-links-grid">
+                            <!-- Populated dynamically based on category/location -->
+                        </div>
+
+                        <div class="search-query-box">
+                            <span class="query-label">Optimized Search Query:</span>
+                            <div class="query-content">
+                                <code id="optimized-query-text">used HP Victus 15 Hyderabad price</code>
+                                <button id="btn-copy-query" class="btn-icon-text" title="Copy Search Query">
+                                    <i class="fa-regular fa-copy"></i> Copy Query
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Negotiation Script Panel -->
+                    <div class="card script-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-comment-dots header-icon text-accent"></i>
+                            <h3>Negotiation Script Assistant</h3>
+                        </div>
+                        <p class="section-desc">Select a negotiation tone to fit your style:</p>
+                        
+                        <div class="tone-selectors">
+                            <button class="tone-chip active" data-tone="friendly">
+                                <i class="fa-solid fa-face-smile"></i> Polite & Friendly
+                            </button>
+                            <button class="tone-chip" data-tone="firm">
+                                <i class="fa-solid fa-user-shield"></i> Firm & Direct
+                            </button>
+                            <button class="tone-chip" data-tone="budget">
+                                <i class="fa-solid fa-wallet"></i> Budget-Conscious
+                            </button>
+                        </div>
+
+                        <div class="script-box">
+                            <textarea id="negotiation-message" readonly rows="4"></textarea>
+                            <button id="btn-copy-message" class="btn-primary btn-copy">
+                                <i class="fa-regular fa-copy"></i> Copy Message
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Negotiation Simulator -->
+                    <div class="card simulator-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-comments header-icon text-accent"></i>
+                            <h3>Negotiation Practice Simulator</h3>
+                        </div>
+                        <p class="section-desc">Simulate a chat with the seller to practice your counter-offers:</p>
+                        
+                        <div class="chat-container">
+                            <div class="chat-messages" id="chat-messages-box">
+                                <!-- Prepopulated greeting -->
+                            </div>
+                            
+                            <div class="chat-choices-header">Select your response:</div>
+                            <div class="chat-choices" id="chat-choices-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="simulator-footer">
+                            <button id="btn-reset-chat" class="btn-secondary btn-sm">
+                                <i class="fa-solid fa-rotate-left"></i> Reset Simulator
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inspection Checklist -->
+                    <div class="card checklist-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-clipboard-check header-icon text-success"></i>
+                            <h3>Inspection Checklist Before Payment</h3>
+                        </div>
+                        <p class="section-desc">Do not buy without checking these physically. Tick items as you inspect:</p>
+                        
+                        <div class="checklist-items" id="checklist-items-box">
+                            <!-- Populated dynamically based on category -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- API Settings Modal (Hidden by Default) -->
+    <div id="api-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gemini AI Integration Settings</h2>
+                <button class="close-modal-btn" id="close-api-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="section-desc">To search and fetch live, accurate pricing benchmarks and issues in the background, DealMate AI can connect directly to Google's Gemini API.</p>
+                <div class="form-group">
+                    <label for="api-key-input">Gemini API Key</label>
+                    <input type="password" id="api-key-input" placeholder="AIzaSy...">
+                    <small class="text-muted" style="display: block; margin-top: 6px; line-height: 1.4;">
+                        Don't have a key? You can get a free developer key from the official <a href="https://aistudio.google.com/" target="_blank">Google AI Studio <i class="fa-solid fa-up-right-from-square"></i></a>.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-api-key" class="btn-primary">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Sidebar Modal (Hidden by Default) -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Saved Analyses History</h2>
+                <button class="close-modal-btn" id="close-history-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="history-empty-state" class="text-center p-4">
+                    <i class="fa-solid fa-folder-open text-muted" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p class="text-muted">No saved deals found. Run an analysis and it will be saved here automatically.</p>
+                </div>
+                <div class="history-list" id="history-listings-container">
+                    <!-- Cards will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-clear-history" class="btn-danger"><i class="fa-solid fa-trash-can"></i> Clear All History</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p id="loading-text">Fetching live product details from Gemini AI...</p>
+        </div>
+    </div>
+
+    <!-- Script Import -->
+    <script src="app.js"></script>
+</body>
+</html>
