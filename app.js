@@ -1276,7 +1276,7 @@ els.dealForm.addEventListener("submit", (e) => {
 });
 
 // 16. Gemini API Settings & Live Background Search
-let geminiApiKey = localStorage.getItem("dealmate_gemini_api_key") || "";
+let geminiApiKey = localStorage.getItem("dealmate_gemini_api_key") || "AIzaSyAvvlEZ6wh6MrFHI5KSk-Ub6Dfx9nlW8D0";
 
 const toggleApiModal = (show) => {
     if (show) {
